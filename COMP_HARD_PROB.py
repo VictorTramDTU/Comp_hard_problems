@@ -7,11 +7,10 @@ T = []
 R = []
 output = 'unknown'
 
-SIGMA = [chr(i) for i in range(ord('a'), ord('z') + 1)]
-GAMMA = [chr(i) for i in range(ord('A'), ord('Z') + 1)]
-indexMapping = {t: i for i, t in enumerate(GAMMA)}
+SIGMA = [chr(i) for i in range(ord('a'), ord('z')+1)]
+GAMMA = [chr(i) for i in range(ord('A'), ord('Z')+1)]
 
-filename = r'test07.swe'
+filename = r'../test06.swe'
 # filename = input()
 
 with open(filename, "r", encoding="utf-8") as f:
@@ -27,14 +26,12 @@ indexMapping = {}
 for line in lines[2 + k:]:
     if ":" in line:
         t, values = line.split(":", 1)
-        if t not in unique_Ts:
-            continue
+        if t not in unique_Ts: continue
         indexMapping[t] = m
         items = [v.strip() for v in values.split(",") if v.strip() and v in s]
         R.append(items)
         m += 1
 
-# --- sanity checks ---
 for i in range(k):
     if len(T[i]) > len(s):
         output = 'NO'
@@ -52,7 +49,7 @@ for j in range(m):
                 break
 
 
-# decision function
+# desiscion
 def Decision(X):
     for i in range(k):
         T_i = ''
@@ -61,84 +58,36 @@ def Decision(X):
                 T_i += expansion(letter, X)
             else:
                 T_i += letter
-        if T_i not in s:
+        if T_i in s:
+            continue
+        else:
             return False, []
     return True, X
 
 
 def expansion(letter, X):
     index = indexMapping[letter]
-    if letter not in indexMapping:
-        return letter
     return X[index]
 
 
-# 🧠 Aggressive PRUNING function
-def partial_check(X):
-    """
-    Returns False if current partial expansion already invalid.
-    Uses prefix + substring pruning for early rejection.
-    """
-    for i in range(k):
-        T_i = ''
-        for letter in T[i]:
-            if letter in GAMMA:
-                idx = indexMapping[letter]
-                if idx >= len(X):
-                    break  # unassigned yet
-                T_i += X[idx]
-            else:
-                T_i += letter
+# brute force approach
 
-        # skip empty partials
-        if not T_i:
-            continue
-
-        # 🧠 PRUNE 1: length overflow
-        if len(T_i) > len(s):
-            return False
-
-        # 🧠 PRUNE 2: substring not present at all
-        if T_i not in s:
-            # 🧠 PRUNE 3: check if any prefix of T_i exists in s (soft pruning)
-            # if no prefix exists in s, prune early
-            prefix_ok = False
-            for p in range(len(T_i) - 1, 0, -1):
-                if T_i[:p] in s:
-                    prefix_ok = True
-                    break
-            if not prefix_ok:
-                return False
-    return True
-
-
-# --- brute-force search ---
 indices = [0 for _ in range(m)]
-start = time.time()
 
+start = time.time()
 while output != 'NO':
+    # make current combination
     current_combination = [R[i][indices[i]] for i in range(m)]
 
-    # 🧠 skip impossible partial combinations before Decision()
-    if not partial_check(current_combination):
-        pos = 0
-        while pos <= m - 1:
-            indices[pos] += 1
-            if indices[pos] < len(R[pos]):
-                break
-            else:
-                indices[pos] = 0
-                pos += 1
-        if pos > m - 1:
-            output = 'NO'
-            break
-        continue
-
-    # test full combination
-    if Decision(current_combination)[0]:
+    # test current combination
+    print(current_combination)
+    decision, X = Decision(current_combination)
+    if decision:
         output = 'YES'
         print('YES')
-        print(Decision(current_combination)[1])
+        solution = {list(indexMapping.keys())[i]: r for i, r in enumerate(X)}
+        for letter, exp in solution.items():
+            print(letter + " --> " + exp)
         end = time.time()
         print(f"Execution time: {end - start:.6f} seconds")
         break
@@ -146,17 +95,18 @@ while output != 'NO':
     # increment indices
     pos = 0
     while pos <= m - 1:
-        indices[pos] += 1
+        indices[pos] = indices[pos] + 1
         if indices[pos] < len(R[pos]):
             break
         else:
             indices[pos] = 0
-            pos += 1
+            pos = pos + 1
     if pos > m - 1:
         output = 'NO'
         break
 
-if output == 'unknown' or output == 'NO':
+if output == 'NO':
     print('NO')
+
     end = time.time()
     print(f"Execution time: {end - start:.6f} seconds")
