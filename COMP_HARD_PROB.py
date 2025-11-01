@@ -1,4 +1,14 @@
 import time
+import sys
+from functools import partial
+
+verbose = len(sys.argv) > 1 and sys.argv[1] in ('-v', '--verbose')
+
+if verbose:
+    debug = partial(print, file=sys.stderr)
+else:
+    def debug(*args, **kwargs):
+        pass
 
 k = None
 s = None
@@ -89,7 +99,7 @@ while output != 'NO':
     current_combination = [R[i][indices[i]] for i in range(m)]
 
     # test current combination
-    print(current_combination)
+    debug(current_combination)
     decision, X = Decision(current_combination)
     if decision:
         output = 'YES'
@@ -98,7 +108,7 @@ while output != 'NO':
         for letter, exp in solution.items():
             print(letter + " --> " + exp)
         end = time.time()
-        print(f"Execution time: {end - start:.6f} seconds")
+        print(f"Execution time: {end - start:.6f} seconds", file=sys.stderr)
         break
 
     # increment indices
@@ -117,4 +127,4 @@ while output != 'NO':
 if output == 'unknown' or output == 'NO':
     print('NO')
     end = time.time()
-    print(f"Execution time: {end - start:.6f} seconds")
+    print(f"Execution time: {end - start:.6f} seconds", file=sys.stderr)
