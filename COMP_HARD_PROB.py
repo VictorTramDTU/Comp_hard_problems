@@ -11,11 +11,14 @@ SIGMA = [chr(i) for i in range(ord('a'), ord('z') + 1)]
 GAMMA = [chr(i) for i in range(ord('A'), ord('Z') + 1)]
 indexMapping = {t: i for i, t in enumerate(GAMMA)}
 
-filename = r'test07.swe'
-# filename = input()
+lines = []
+try:
+    while True:
+        lines.append(input())
+except EOFError:
+    pass
 
-with open(filename, "r", encoding="utf-8") as f:
-    lines = [line.strip() for line in f if line.strip()]
+lines = [line for line in lines if line]
 
 k = int(lines[0])
 s = lines[1]
