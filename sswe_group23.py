@@ -19,7 +19,6 @@ output = 'unknown'
 
 SIGMA = [chr(i) for i in range(ord('a'), ord('z') + 1)]
 GAMMA = [chr(i) for i in range(ord('A'), ord('Z') + 1)]
-indexMapping = {t: i for i, t in enumerate(GAMMA)}
 
 lines = []
 try:
@@ -35,19 +34,24 @@ s = lines[1]
 T = lines[2:2 + k]
 R = []
 
-unique_Ts = {c for t in T for c in t}
-indexMapping = {}
+# a set of all elements of gamma that appear in any of the t_i strings
+gammas_used = {c for t in T for c in t}
+# maps an element of gamma to its index in R
+gamma2index = {}
 for line in lines[2 + k:]:
     if ":" in line:
         t, values = line.split(":", 1)
-        if t not in unique_Ts:
+        if t not in gammas_used:
+            # no t_i uses this element of gamma, so just disregard it.
             continue
-        indexMapping[t] = m
+        gamma2index[t] = m
+        # associate with R[i] the set of possible extensions, except those that are not subsets 
         items = [v.strip() for v in values.split(",") if v.strip() and v in s]
         R.append(items)
         m += 1
 
 # --- sanity checks ---
+# check that each t_i is shorter than s (otherwise it cannot be a substring), and that all characters of t_i are in GAMMA or SIGMA.
 for i in range(k):
     if len(T[i]) > len(s):
         output = 'NO'
@@ -57,6 +61,7 @@ for i in range(k):
             output = 'NO'
             break
 
+# check that all possible extensions for each element of GAMMA consist only of characters from SIGMA.
 for j in range(m):
     for r_i in R[j]:
         for letter in r_i:
@@ -64,27 +69,29 @@ for j in range(m):
                 output = 'NO'
                 break
 
+# check that each r_i has at least one possible extension (otherwise it is trivially a NO instance)
+for j in range(m):
+    if len(R[j]) == 0:
+        output = 'NO'
+        break
 
 # decision function
-def Decision(X):
+def decision(current_combination):
     for i in range(k):
         T_i = ''
         for letter in T[i]:
             if letter in GAMMA:
-                T_i += expansion(letter, X)
+                T_i += expansion(letter, current_combination)
             else:
                 T_i += letter
         if T_i not in s:
-            return False, []
-    return True, X
+            return False
+    return True
 
 
-def expansion(letter, X):
-    index = indexMapping[letter]
-    if letter not in indexMapping:
-        return letter
-    return X[index]
-
+def expansion(letter, current_combination):
+    index = gamma2index[letter]
+    return current_combination[index]
 
 # brute force approach
 
@@ -95,16 +102,15 @@ indices = [0 for _ in range(m)]
 start = time.time()
 
 while output != 'NO':
-    # make current combination
+    # make current combination. Maps an index into R to the expansion for the corresponding element of gamma.
     current_combination = [R[i][indices[i]] for i in range(m)]
 
     # test current combination
     debug(current_combination)
-    decision, X = Decision(current_combination)
-    if decision:
+    if decision(current_combination):
         output = 'YES'
         print('YES')
-        solution = {list(indexMapping.keys())[i]: r for i, r in enumerate(X)}
+        solution = {list(gamma2index.keys())[i]: r for i, r in enumerate(current_combination)}
         for letter, exp in solution.items():
             print(letter + " --> " + exp)
         end = time.time()
