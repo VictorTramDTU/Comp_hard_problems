@@ -1,4 +1,3 @@
-# Running the algorithm
 In order to run our algorithm on an input file, only a Python 3 interpreter is required. We use only the standard library.
 The `.swe` file must be given on stdin:
 
