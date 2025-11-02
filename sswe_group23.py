@@ -30,7 +30,7 @@ except EOFError:
 lines = [line for line in lines if line]
 
 k = int(lines[0])
-s = lines[1]
+s = lines[1] if len(lines) > 2 else ""
 T = lines[2:2 + k]
 R = []
 
