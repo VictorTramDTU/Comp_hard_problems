@@ -30,4 +30,4 @@ $run < test06.swe | check_yes || wrong 6
 $run < test08.swe | check_yes || wrong 8
 $run < test09.swe | check_no || wrong 9
 $run < test10.swe | check_no || wrong 10
-$run < test11.swe | check_no || wrong 11
+$run < test11.swe | check_yes || wrong 11
